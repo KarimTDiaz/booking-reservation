@@ -43,13 +43,13 @@ const createCalendar = () =>{
         }
     }
     calendarElement.append(fragment)
-    const daysElements = document.querySelectorAll('.day')
-    allNumericDays = daysElements
+  
 }
 createCalendar()
 
-const selectedDay = (target) =>{
-  
+const selectedDay = (day) =>{
+  day.classList.add('selected')
+
 }
 
 calendarElement.addEventListener('click' , (ev) =>{
