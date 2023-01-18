@@ -5,6 +5,9 @@ const isLeap = () =>{
 }
 const date = new Date()
 let year = date.getFullYear()
+let month = date.getMonth()
+let day = date.getDate()
+let allNumericDays=[];
 
 const monthsAndDays = {
     january: 31,
@@ -20,9 +23,36 @@ const monthsAndDays = {
     november: 30,
     december: 31
 };
-const months = ['january','february',]
+
+const months = ['january','february','march','april','may','june','july','august','september','october','november','december'];
 
 const createCalendar = () =>{
-    
+    const fragment = document.createDocumentFragment();
 
+    for (let index = 1; index < monthsAndDays[months[month]] +1; index++) {
+        const dayCalendar = document.createElement('div')
+        dayCalendar.classList.add('day')
+        fragment.append(dayCalendar)
+        dayCalendar.textContent = index
+        allNumericDays.push(index)
+
+        if(index < day){
+            dayCalendar.classList.add('disabled')
+        }else if(day === index){
+            dayCalendar.classList.add('today')
+        }
+    }
+    calendarElement.append(fragment)
+    const daysElements = document.querySelectorAll('.day')
+    allNumericDays = daysElements
 }
+createCalendar()
+
+const selectedDay = (target) =>{
+  
+}
+
+calendarElement.addEventListener('click' , (ev) =>{
+    selectedDay(ev.target)
+   }
+)
