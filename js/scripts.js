@@ -1,5 +1,7 @@
 const calendarElement = document.getElementById('calendar');
 const dinnersElement = document.getElementById('dinners');
+const turnsElement = document.getElementById('shift') 
+const formElement = document.getElementById('form')
 const rootStyles = document.documentElement.style;
 
 const isLeap = () => (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
@@ -9,7 +11,7 @@ const date = new Date();
 let year = date.getFullYear();
 let month = date.getMonth();
 let day = date.getDate();
-let allNumericDays;
+let allDaysOfMonth;
 let getTheWeekDay;
 
 const firstDay = new Date(year, month, '1');
@@ -52,16 +54,19 @@ const months = [
   'november',
   'december'
 ];
-console.log(firstDay.getDay());
+const weekend = [5 , 6 , 0];
 
+/* FUNCION PARA CREAR CALENDARIO */
 const createCalendar = () => {
   const fragment = document.createDocumentFragment();
+
+  /* BUCLE PARA CREAR E IMPRIMIR DIAS DE LA SEMANA */
   for (let index = 0; index < weekDays.length; index++) {
     const weekDayCalendar = document.createElement('div');
     weekDayCalendar.textContent = weekDays[index];
     fragment.append(weekDayCalendar);
   }
-
+/* BUCLE PARA CREAR LOS DIVS CON LOS DIAS DEL MES */
   for (let index = 1; index <= monthsAndDays[months[month]]; index++) {
     const dayCalendar = document.createElement('div');
     dayCalendar.classList.add('day');
@@ -77,45 +82,96 @@ const createCalendar = () => {
     if (index === 1) {
       dayCalendar.classList.add('first-day');
     }
+    /* IF PARA COLOCAR EL CALENDARIO */
+
     let column;
     if (firstDay.getDay() === 0) column = 7;
     else column = firstDay.getDay();
 
     rootStyles.setProperty('--first-day-column', column);
   }
+
   calendarElement.append(fragment);
-  allNumericDays = document.querySelectorAll('.day');
+  allDaysOfMonth = document.querySelectorAll('.day');
 };
 
+
+
+/* FUNCION PARA APLICAR BORDE AMARILLO EN EL DIA QUE SELECCIONE */
 const selectedDay = day => {
   if (!day.classList.contains('day') || day.classList.contains('disabled'))
     return;
-  allNumericDays.forEach(day => {
+  allDaysOfMonth.forEach(day => {
     day.classList.remove('selected');
   });
   day.classList.add('selected');
 };
 
+/* FUNCIONES PARA EL SELECT DE DINNERS */
 const getDayOfWeek = day => new Date(year, month, day).getDay();
 
 const dinnerSelect = day => {
-  if (day.classList.contains('disabled')) return;
-  dinnersElement.removeAttribute('disabled');
   const dinnersFragment = document.createDocumentFragment();
 
-  const dinnersOptions = document.createElement('option');
-  dinnersOptions.textContent = 'dinner';
-  dinnersFragment.append(dinnersOptions);
+  for (let index = 0; index <= day; index++) {
+    const dinnersOptions = document.createElement('option');
+    dinnersOptions.textContent = index + ' Dinners'
+    if(index === 0){
+        dinnersOptions.textContent = 'Number Of Dinners'
+    }else if(index === 1){
+        dinnersOptions.textContent = index + ' Dinner'
+    }
+    dinnersOptions.value = index
+    dinnersFragment.append(dinnersOptions);
+  }
   dinnersElement.append(dinnersFragment);
 };
 
-const dinnerSelectOptions = () => {};
+const dinnerSelectOptions = (day) => {
+    dinnersElement.innerHTML = '';
+    /* if (day.classList.contains('disabled')) return; */
+    if(weekend.includes(day)){
+        dinnersElement.append(dinnerSelect(15))
+    }else{
+        dinnersElement.append(dinnerSelect(8))
+    }
+    dinnersElement.removeAttribute('disabled');
+
+};
 
 createCalendar();
 
+/* FUNCIONES PARA EL SELECT DE LOS TURNOS */
+const turnSelect = turns =>{
+    const turnFragment = document.createDocumentFragment();
+
+    for (let index = 0; index < turns.length ; index++) {
+        const turnOptions = document.createElement('option')
+         
+        turnFragment.append(turnOptions)  
+    }
+    turnsElement.append(turnFragment)
+}
+
+const turnSelectOptions = (day) =>{
+    if(day !== 0){
+      turnsElement.append(turnSelect(2))
+    } else{
+      turnsElement.append(turnSelect(1))
+    }
+    
+}
+
 calendarElement.addEventListener('click', ev => {
   selectedDay(ev.target);
-  dinnerSelect(ev.target);
-  dinnerSelectOptions();
+  /* dinnerSelect(ev.target); */
   getTheWeekDay = getDayOfWeek(ev.target.textContent);
+  dinnerSelectOptions(getTheWeekDay);
+  turnSelectOptions(getTheWeekDay)
 });
+
+formElement.addEventListener('change', ev =>{
+
+    turnsElement.removeAttribute('disabled')
+    
+})
