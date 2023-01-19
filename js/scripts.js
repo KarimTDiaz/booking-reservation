@@ -1,7 +1,11 @@
 const calendarElement = document.getElementById('calendar');
 const dinnersElement = document.getElementById('dinners');
-const turnsElement = document.getElementById('shift') 
-const formElement = document.getElementById('form')
+const turnsElement = document.getElementById('shift');
+const hoursElement = document.getElementById('hours');
+const reserveElement = document.getElementById('reserve');
+const reserveTextElement = document.getElementById('reserve-status');
+const formElement = document.getElementById('form');
+
 const rootStyles = document.documentElement.style;
 
 const isLeap = () => (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
@@ -13,6 +17,7 @@ let month = date.getMonth();
 let day = date.getDate();
 let allDaysOfMonth;
 let getTheWeekDay;
+let selectedNumericDay;
 
 const firstDay = new Date(year, month, '1');
 
@@ -54,7 +59,7 @@ const months = [
   'november',
   'december'
 ];
-const weekend = [5 , 6 , 0];
+const weekend = [5, 6, 0];
 
 /* FUNCION PARA CREAR CALENDARIO */
 const createCalendar = () => {
@@ -66,7 +71,7 @@ const createCalendar = () => {
     weekDayCalendar.textContent = weekDays[index];
     fragment.append(weekDayCalendar);
   }
-/* BUCLE PARA CREAR LOS DIVS CON LOS DIAS DEL MES */
+  /* BUCLE PARA CREAR LOS DIVS CON LOS DIAS DEL MES */
   for (let index = 1; index <= monthsAndDays[months[month]]; index++) {
     const dayCalendar = document.createElement('div');
     dayCalendar.classList.add('day');
@@ -95,8 +100,6 @@ const createCalendar = () => {
   allDaysOfMonth = document.querySelectorAll('.day');
 };
 
-
-
 /* FUNCION PARA APLICAR BORDE AMARILLO EN EL DIA QUE SELECCIONE */
 const selectedDay = day => {
   if (!day.classList.contains('day') || day.classList.contains('disabled'))
@@ -115,63 +118,156 @@ const dinnerSelect = day => {
 
   for (let index = 0; index <= day; index++) {
     const dinnersOptions = document.createElement('option');
-    dinnersOptions.textContent = index + ' Dinners'
-    if(index === 0){
-        dinnersOptions.textContent = 'Number Of Dinners'
-    }else if(index === 1){
-        dinnersOptions.textContent = index + ' Dinner'
+    dinnersOptions.textContent = index + ' Dinners';
+    if (index === 0) {
+      dinnersOptions.textContent = 'Number Of Dinners';
+    } else if (index === 1) {
+      dinnersOptions.textContent = index + ' Dinner';
     }
-    dinnersOptions.value = index
+    dinnersOptions.value = index;
+
     dinnersFragment.append(dinnersOptions);
   }
   dinnersElement.append(dinnersFragment);
 };
 
-const dinnerSelectOptions = (day) => {
-    dinnersElement.innerHTML = '';
-    /* if (day.classList.contains('disabled')) return; */
-    if(weekend.includes(day)){
-        dinnersElement.append(dinnerSelect(15))
-    }else{
-        dinnersElement.append(dinnerSelect(8))
-    }
-    dinnersElement.removeAttribute('disabled');
-
+const dinnerSelectOptions = day => {
+  dinnersElement.innerHTML = '';
+  /* if (day.classList.contains('disabled')) return; */
+  if (weekend.includes(day)) {
+    dinnersElement.append(dinnerSelect(15));
+  } else {
+    dinnersElement.append(dinnerSelect(8));
+  }
+  dinnersElement.removeAttribute('disabled');
 };
 
 createCalendar();
 
 /* FUNCIONES PARA EL SELECT DE LOS TURNOS */
-const turnSelect = turns =>{
-    const turnFragment = document.createDocumentFragment();
+const turnSelect = day => {
+  turnsElement.innerHTML = '';
+  const turns = ['Select your Shift', 'Morning', 'Afternoon'];
+  const turnFragment = document.createDocumentFragment();
 
-    for (let index = 0; index < turns.length ; index++) {
-        const turnOptions = document.createElement('option')
-         
-        turnFragment.append(turnOptions)  
-    }
-    turnsElement.append(turnFragment)
-}
+  let turnOption = document.createElement('option');
+  turnOption.textContent = turns[0];
+  turnOption.value = 0;
+  turnFragment.append(turnOption);
 
-const turnSelectOptions = (day) =>{
-    if(day !== 0){
-      turnsElement.append(turnSelect(2))
-    } else{
-      turnsElement.append(turnSelect(1))
+  turnOption = document.createElement('option');
+  turnOption.textContent = turns[1];
+  turnOption.value = 'morning';
+  turnFragment.append(turnOption);
+
+  if (day !== 0) {
+    turnOption = document.createElement('option');
+    turnOption.textContent = turns[2];
+    turnOption.value = 'afternoon';
+    turnFragment.append(turnOption);
+  }
+
+  return turnFragment;
+};
+
+const turnSelectOptions = day => {
+  turnsElement.append(turnSelect(day));
+};
+
+//FUNCIONES PARA CREAR LAS HORAS
+
+const hoursObj = {
+  morning: {
+    startTime: 8,
+    endTime: 17
+  },
+  afternoon: {
+    startTime: 15,
+    endTime: 22
+  }
+};
+
+const hourSelect = turn => {
+  hoursElement.innerHTML = '';
+  const hoursFragment = document.createDocumentFragment();
+  const hourSelect = document.createElement('option');
+  hourSelect.textContent = 'Select Your Hour';
+  hourSelect.value = 0;
+  hoursFragment.append(hourSelect);
+  for (
+    let index = hoursObj[turn].startTime;
+    index <= hoursObj[turn].endTime;
+    index++
+  ) {
+    let hoursOptions = document.createElement('option');
+    hoursOptions.textContent = index + ':00';
+    hoursOptions.value = index + ':00';
+    hoursFragment.append(hoursOptions);
+
+    hoursOptions = document.createElement('option');
+    if (index !== hoursObj[turn].endTime) {
+      hoursOptions.textContent = index + ':30';
+      hoursOptions.value = index + ':30';
+      hoursFragment.append(hoursOptions);
     }
-    
-}
+  }
+
+  hoursElement.append(hoursFragment);
+};
+
+const hourSelectOptions = turn => {
+  hourSelect(turn);
+};
+
+const enableOptions = e => {};
 
 calendarElement.addEventListener('click', ev => {
   selectedDay(ev.target);
   /* dinnerSelect(ev.target); */
   getTheWeekDay = getDayOfWeek(ev.target.textContent);
   dinnerSelectOptions(getTheWeekDay);
-  turnSelectOptions(getTheWeekDay)
+  turnSelectOptions(getTheWeekDay);
+  enableOptions(ev.target);
+  if (ev.target.classList.contains('disabled')) {
+    dinnersElement.disabled = true;
+  }
+  reserveTextElement.textContent = 'Reserva en proceso';
+  selectedNumericDay = ev.target.textContent;
 });
 
-formElement.addEventListener('change', ev =>{
+dinnersElement.addEventListener('change', ev => {
+  if (Number(ev.target.value) === 0) {
+    turnsElement.disabled = true;
+  } else {
+    turnsElement.disabled = false;
+  }
+});
 
-    turnsElement.removeAttribute('disabled')
-    
-})
+turnsElement.addEventListener('change', ev => {
+  if (Number(ev.target.value) === 0) {
+    hoursElement.disabled = true;
+  } else {
+    hoursElement.disabled = false;
+  }
+  hourSelectOptions(ev.target.value);
+});
+
+hoursElement.addEventListener('change', ev => {
+  let dinners = Number(dinnersElement.value);
+  let hours = hoursElement.value;
+
+  console.log(dinners);
+  console.log(Number(ev.target.value));
+  if (Number(ev.target.value) === 0) {
+    reserveElement.disabled = true;
+  } else {
+    reserveElement.disabled = false;
+  }
+  reserveTextElement.textContent = `Has seleccionado una reserva para ${dinners} persona(s) el dia ${selectedNumericDay} a las ${hours}`;
+});
+
+reserveElement.addEventListener('change', ev => {});
+
+formElement.addEventListener('submit', ev => {
+  ev.preventDefault();
+});
